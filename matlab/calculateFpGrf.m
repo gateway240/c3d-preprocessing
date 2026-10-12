@@ -41,7 +41,7 @@ for i = 1:length_frames
 
     if ~valid
         cop = mean_corners;
-        tz = [0; 0; 0];
+        tz = ref_frame * (m_raw');
     end
 
     f = rotm * f;
