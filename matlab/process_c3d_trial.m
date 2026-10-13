@@ -26,6 +26,7 @@ TRIALS = [
 MARKERS_SUFFIX = "_markers.trc";
 ANALOGS_SUFFIX = "_analog_custom.sto";
 GRFS_SUFFIX = "_grfs_custom.sto";
+GRFS_RAW_SUFFIX = "_grfs_raw.sto";
 GRFS_WRONG_SUFFIX = "_grfs_wrong.sto";
 
 INPUT_PATH = fullfile(DATASET_PATH, PARTICIPANT, MOCAP_SUBDIR);
@@ -80,13 +81,19 @@ for i = 1:size(TRIALS,1)
     [status, output] = extractAnalogs(c3d,analog_file, time_start, time_end);
     fprintf("Status: %d\n%s", status, output);
 
+
+    %% GRF Extraction - TRIAL_raw.sto file
+    grf_file = fullfile(OUTPUT_PATH, strcat(trial_name,GRFS_RAW_SUFFIX));
+    fprintf("Starting on file: %s\n", grf_file);
+    [status, output] = extractGrfs(c3d, all_pf, grf_file, rotm, ...
+        fp_l, fp_r, -1, -1, GRF_CUTOFF, time_start, time_end);
+    fprintf("Status: %d\n%s", status, output);
     %% GRF Extraction - TRIAL_grfs.sto file
     grf_file = fullfile(OUTPUT_PATH, strcat(trial_name,GRFS_SUFFIX));
     fprintf("Starting on file: %s\n", grf_file);
     [status, output] = extractGrfs(c3d, all_pf, grf_file, rotm, ...
         fp_l, fp_r, FILTER_ORDER, CUTOFF_FREQUENCY, GRF_CUTOFF, time_start, time_end);
     fprintf("Status: %d\n%s", status, output);
-
     %% GRF Extraction [WRONG!] - TRIAL_grfs_wrong.sto file
     grf_file = fullfile(OUTPUT_PATH, strcat(trial_name,GRFS_WRONG_SUFFIX));
     fprintf("Starting on file: %s\n", grf_file);

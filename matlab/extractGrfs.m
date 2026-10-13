@@ -39,14 +39,17 @@ Fc = filter_cutoff_frequency;
 Fs = analog_frequency;
 % Second order filter forwards-backwards is effectively fourth order
 n = filter_order;
-% From Winter Biomechanics and Motor Control p. 69
-C = (2^(1/2)-1)^(1/(2*n));
+% Only filter if filter parameters are valid
+if Fc >= 0 && n > 0
+    % From Winter Biomechanics and Motor Control p. 69
+    C = (2^(1/2)-1)^(1/(2*n));
 
-Fc_corrected = Fc/C;
+    Fc_corrected = Fc/C;
 
-Wn = Fc_corrected/(Fs/2);
+    Wn = Fc_corrected/(Fs/2);
 
-[b,a] = butter(n,Wn,'low');
+    [b,a] = butter(n,Wn,'low');
+end
 
 fp_active = [fp_l, fp_r];
 num_inputs = sum(count(grf_mapping(:,1),string(fp_l)));
@@ -57,7 +60,12 @@ grf_index = 1;
 for i = 1:length(grf_mapping)
     index = str2double(grf_mapping(i,3));
     if index > 0
-        grf_filtered(:,grf_index) = filtfilt(b, a, analogs(:,index));
+        % Only filter if filter parameters are valid
+        if Fc >= 0 && n > 0
+            grf_filtered(:,grf_index) = filtfilt(b, a, analogs(:,index));
+        else
+            grf_filtered(:,grf_index) = analogs(:,index);
+        end
         grf_index = grf_index + 1;
     end
 end
