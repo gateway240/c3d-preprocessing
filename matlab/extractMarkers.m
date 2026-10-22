@@ -25,6 +25,15 @@ point_columns = point_columns(~invalid);
 % Get data
 points = c3d.data.points;
 points = points(:, ~invalid, :);
+% Linear Interpolation
+for m = 1:size(points,2)
+    for d = 1:3
+        points(d,m,:) = fillmissing( ...
+            squeeze(points(d,m,:)), ...
+            'linear', ...
+            'EndValues','nearest');
+    end
+end
 [status, output] = writeMarkerTrcFile(points, point_frequency, point_units,...
     point_columns, input_path, file,  rotm, time_start, time_end);
 end
