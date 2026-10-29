@@ -2,10 +2,12 @@
 import logging
 import pathlib
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
+import numpy as np
 from ezc3d import c3d
 
+from c3d_preprocessing.extract_markers import extract_markers
 from c3d_preprocessing.trial import Trial
 
 logging.basicConfig(level=logging.INFO)
@@ -35,7 +37,11 @@ GRFS_WRONG_SUFFIX = "_grfs_wrong.sto"
 # [0,-1,0]
 # [0, 0,1]
 # [-1,0,0]
-rotm = [[0, -1, 0], [0, 0, 1], [-1, 0, 0]]
+rotm = np.array([
+    [0, -1, 0],
+    [0, 0, 1],
+    [-1, 0, 0],
+])
 GRF_CUTOFF = 1  # N
 
 # Low-pass parameters
@@ -44,25 +50,25 @@ FILTER_ORDER = 2  # forward backward filtering doubles it (so 2 = 4th order)
 
 MOCAP_SUBDIR = "mocap"
 # 01...13
-# PARTICIPANTS = [str(i).zfill(2) for i in range(1, 14)]
-PARTICIPANTS = ["01"]
+PARTICIPANTS = [str(i).zfill(2) for i in range(1, 14)]
+# PARTICIPANTS = ["01"]
 BASE_TRIALS = [
     ("static_cal", 1, 1),
     ("dyn_sara", 1, 1),
     ("dyn_score_hip", 1, 1),
-    # ("dyn_score_ankle", 1, 1),
-    # ("crouch_lift", 3, 2),
-    # ("crouch_rotate", 3, 2),
-    # ("curls", 3, 2),
-    # ("kettlebell", 3, 2),
-    # ("squats_deep", 3, 2),
-    # ("half_jacks", 3, 2),
-    # ("squat_jumps", 3, 2),
-    # ("box_jabs", 2, 1),
-    # ("box_combos", 2, 1),
-    # ("walking", 4, 5),
-    # ("jogging", 4, 5),
-    # ("crab_walking", 4, 5),
+    ("dyn_score_ankle", 1, 1),
+    ("crouch_lift", 3, 2),
+    ("crouch_rotate", 3, 2),
+    ("curls", 3, 2),
+    ("kettlebell", 3, 2),
+    ("squats_deep", 3, 2),
+    ("half_jacks", 3, 2),
+    ("squat_jumps", 3, 2),
+    ("box_jabs", 2, 1),
+    ("box_combos", 2, 1),
+    ("walking", 4, 5),
+    ("jogging", 4, 5),
+    ("crab_walking", 4, 5),
 ]
 # Force plate overrides
 SQUATS_DEEP_SWAP = {"01", "03", "05", "07", "13"}
@@ -93,13 +99,17 @@ def get_force_plates(
 
 
 def process_trial(trial: Trial) -> int:
-    logger.info("Starting on Participant: %s Trial: %s", trial.participant, trial.name)
+    status = 0
+    trial_name = trial.name
+    time_start = trial.start_time
+    time_end = trial.end_time
+    logger.info("Starting on Participant: %s Trial: %s", trial.participant, trial_name)
     input_path = DATASET_PATH / trial.participant / MOCAP_SUBDIR
     output_path = OUTPUT_DIR / trial.participant
     output_path.mkdir(parents=True, exist_ok=True)
 
     # C3D Loading
-    c3d_file = input_path / f"{trial.name}.c3d"
+    c3d_file = input_path / f"{trial_name}.c3d"
     logger.info("Starting to read c3d file: %s", c3d_file)
     # NOTE: you cannot pass a pathlib.Path to this function
     c = c3d(str(c3d_file), extract_forceplat_data=True)
@@ -107,6 +117,29 @@ def process_trial(trial: Trial) -> int:
         "C3D file loaded! Found %d markers",
         c["parameters"]["POINT"]["USED"]["value"][0],
     )
+    # Marker Extraction - TRIAL_markers.trc file
+    marker_file = output_path / f"{trial_name}{MARKERS_SUFFIX}"
+    logger.info("Starting on file: %s", marker_file)
+
+    (status, output) = extract_markers(
+        c,
+        marker_file,
+        input_path,
+        rotm,
+        time_start,
+        time_end,
+    )
+    logger.info("Status: %d\n%s", status, output)
+
+    # Do not continue processing if we don't have valid force plates
+    if trial.fp_left <= 0 or trial.fp_right <= 0:
+        return status
+
+    # Analog Extraction - TRIAL_analog.sto file
+
+    # GRF Extraction - TRIAL_raw.sto file
+
+    # GRF Extraction - TRIAL_grfs.sto file
     return 0
 
 
@@ -123,8 +156,8 @@ def main() -> None:
         for participant in PARTICIPANTS
         for name, fp_left, fp_right in BASE_TRIALS
     ]
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        executor.map(process_trial, trials)
+    with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        list(executor.map(process_trial, trials))
 
 
 if __name__ == "__main__":

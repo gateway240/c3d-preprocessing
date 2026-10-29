@@ -7,7 +7,13 @@ authors = [
   { name = "AlexBeattie42", email = "30098201+alexbeattie42@users.noreply.github.com" },
 ]
 requires-python = ">=3.10"
-dependencies = ["ezc3d>=1.7.2", "prek>=0.5.7", "ruff>=0.17.3", "ty>=0.0.94"]
+dependencies = [
+  "ezc3d>=1.7.2",
+  "numpy>=2.2.6",
+  "prek>=0.5.7",
+  "ruff>=0.17.3",
+  "ty>=0.0.94",
+]
 
 [project.scripts]
 c3d_preprocessing = "c3d_preprocessing:main"
