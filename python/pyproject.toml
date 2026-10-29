@@ -16,6 +16,8 @@ c3d_preprocessing = "c3d_preprocessing:main"
 requires = ["uv_build>=0.13.6,<0.14.0"]
 build-backend = "uv_build"
 
+[tool.uv.build-backend]
+module-root = "src"
 
 [tool.ruff]
 line-length = 88
