@@ -1,0 +1,85 @@
+[project]
+name = "c3d_preprocessing"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+  { name = "AlexBeattie42", email = "30098201+alexbeattie42@users.noreply.github.com" },
+]
+requires-python = ">=3.10"
+dependencies = ["ezc3d>=1.7.2", "prek>=0.5.7", "ruff>=0.17.3", "ty>=0.0.94"]
+
+[project.scripts]
+c3d_preprocessing = "c3d_preprocessing:main"
+
+[build-system]
+requires = ["uv_build>=0.13.6,<0.14.0"]
+build-backend = "uv_build"
+
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+preview = true
+extend-select = [
+  "ASYNC", # flake8-async
+  "ANN",   # flake8-annotations
+  "BLE",   # flake8-blind-except
+  "FBT",   # flake8-boolean-trap
+  "B",     # flake8-bugbear
+  "A",     # flake8-builtins
+  "COM",   # flake8-commas
+  "C4",    # Catch incorrect use of comprehensions, dict, list, etc
+  "DTZ",   # flake8-datetimez
+  "T10",   # flake8-debugger
+  "EM",    # flake8-errmsg
+  "EXE",   # flake8-executable
+  "FIX",   # flake8-fixme
+  "FA",    # flake8-future-annotations
+  "INT",   # flake8-gettext
+  "ISC",   # Good use of string concatenation
+  "ICN",   # Use common import conventions
+  "LOG",   # flake8-logging
+  "G",     # flake8-logging-format
+  "INP",   # flake8-no-pep420
+  "PIE",   # flake8-pie
+  "T20",   # flake8-print
+  "PYI",   # flake8-pyi
+  "PT",    # flake8-pytest-style
+  "Q",     # flake8-quotes
+  "RSE",   # flake8-raise
+  "RET",   # Good return practices\
+  "SLF",   # flake8-self
+  "SIM",   # Common simplification rules
+  "SLOT",  # flake8-slots
+  "TID",   # Some good import practices
+  "TD",    # Be diligent with TODO comments
+  "TC",    # Enforce importing certain types in a TYPE_CHECKING block
+  "ARG",   # flake8-unused-arguments
+  "PTH",   # Use pathlib instead of os.path
+  "FLY",   # flynt
+  "I",     # Sort imports properly
+  "C90",   # mccabe
+  "NPY",   # Some numpy-specific things]
+  "PD",    # pandas-vet
+  "N",     # pep8-naming
+  "PERF",  # perflint
+  "E",     # PyCodeStyle errors
+  "W",     # PyCodeStyle warnings
+  "F",     # Pyflakes rules
+  "PL",    # pylint
+  "UP",    # Warn if certain things can changed due to newer Python versions
+  "FURB",  # refurb
+  "RUF",   # ruff-specific rules
+  "TRY",   # tryceratops
+]
+[tool.ruff.format]
+preview = true
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[tool.ty.rules]
+all = "error"

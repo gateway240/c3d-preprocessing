@@ -21,3 +21,12 @@ you may need to fix the mex GLIBC path. Instructions are provided in [this issue
 
 # Python
 WIP
+## Environment Setup
+
+
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+2. `cd python` and then `uv venv`
+3. `source .venv/bin/activate`
+4. `uv pip install -e .`
+
+> NOTE: you can also use `python -m venv .venv` or any other python venv method.
