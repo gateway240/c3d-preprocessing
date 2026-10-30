@@ -45,10 +45,10 @@ def write_marker_trc_file(  # ruff: ignore[too-many-arguments, too-many-position
             f"{0:d}\t"
             f"{num_frames:d}\n",
         )
-        header = "".join(f"{col}\t\t\t" for col in columns)
+        header = "".join(f"{col.split(':', 1)[-1]}\t\t\t" for col in columns)
         fi.write(f"Frame#\tTime\t{header}\n")
 
-        p_idx = list(range(1, num_cols))
+        p_idx = list(range(1, num_cols + 1))
         point_xyz_header = "\t".join(f"X{p}\tY{p}\tZ{p}" for p in p_idx)
         fi.write(f"\t\t{point_xyz_header}\n")
 
