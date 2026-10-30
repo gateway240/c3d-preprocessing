@@ -15,8 +15,6 @@ def write_marker_trc_file(  # ruff: ignore[too-many-arguments, too-many-position
     time_start: float,  # ruff: ignore[unused-function-argument]
     time_end: float,  # ruff: ignore[unused-function-argument]
 ) -> tuple[int, str]:
-    # print("HI!!")
-    # print(data.shape)
     status = 0
     output = ""
     _, num_cols, num_frames = data.shape

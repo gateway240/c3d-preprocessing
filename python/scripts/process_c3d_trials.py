@@ -7,6 +7,8 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 from ezc3d import c3d
 
+from c3d_preprocessing.extract_analogs import extract_analogs
+from c3d_preprocessing.extract_grfs import extract_grfs
 from c3d_preprocessing.extract_markers import extract_markers
 from c3d_preprocessing.trial import Trial
 
@@ -50,8 +52,8 @@ FILTER_ORDER = 2  # forward backward filtering doubles it (so 2 = 4th order)
 
 MOCAP_SUBDIR = "mocap"
 # 01...13
-PARTICIPANTS = [str(i).zfill(2) for i in range(1, 14)]
-# PARTICIPANTS = ["01"]
+# PARTICIPANTS = [str(i).zfill(2) for i in range(1, 14)]
+PARTICIPANTS = ["01"]
 BASE_TRIALS = [
     ("static_cal", 1, 1),
     ("dyn_sara", 1, 1),
@@ -131,15 +133,59 @@ def process_trial(trial: Trial) -> int:
     )
     logger.info("Status: %d\n%s", status, output)
 
+    fp_l = trial.fp_left
+    fp_r = trial.fp_right
     # Do not continue processing if we don't have valid force plates
-    if trial.fp_left <= 0 or trial.fp_right <= 0:
+    if fp_l <= 0 or fp_r <= 0:
         return status
 
     # Analog Extraction - TRIAL_analog.sto file
+    analog_file = output_path / f"{trial_name}{ANALOGS_SUFFIX}"
+    logger.info("Starting on file: %s", analog_file)
+
+    (status, output) = extract_analogs(
+        c,
+        analog_file,
+        time_start,
+        time_end,
+    )
+    logger.info("Status: %d\n%s", status, output)
 
     # GRF Extraction - TRIAL_raw.sto file
+    grf_raw_file = output_path / f"{trial_name}{GRFS_RAW_SUFFIX}"
+    logger.info("Starting on file: %s", grf_raw_file)
+
+    (status, output) = extract_grfs(
+        c,
+        grf_raw_file,
+        rotm,
+        fp_l,
+        fp_r,
+        -1,
+        -1,
+        GRF_CUTOFF,
+        time_start,
+        time_end,
+    )
+    logger.info("Status: %d\n%s", status, output)
 
     # GRF Extraction - TRIAL_grfs.sto file
+    grf_file = output_path / f"{trial_name}{GRFS_SUFFIX}"
+    logger.info("Starting on file: %s", grf_file)
+
+    (status, output) = extract_grfs(
+        c,
+        grf_file,
+        rotm,
+        fp_l,
+        fp_r,
+        FILTER_ORDER,
+        CUTOFF_FREQUENCY,
+        GRF_CUTOFF,
+        time_start,
+        time_end,
+    )
+    logger.info("Status: %d\n%s", status, output)
     return 0
 
 
