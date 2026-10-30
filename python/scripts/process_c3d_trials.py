@@ -186,7 +186,7 @@ def process_trial(trial: Trial) -> int:
         time_end,
     )
     logger.info("Status: %d\n%s", status, output)
-    return 0
+    return status
 
 
 def main() -> None:
