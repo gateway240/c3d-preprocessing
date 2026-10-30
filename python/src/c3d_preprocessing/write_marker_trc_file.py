@@ -69,13 +69,16 @@ def write_marker_trc_file(  # ruff: ignore[too-many-arguments, too-many-position
         # Apply the transformation to every point (XYZ combo) for all frames
         # print(rotm.shape)
         # print(data.shape)
+        # Please note that the shape of point_data is 4xNxT,
+        # where 4 represent the components XYZ1
+        # (the 3D coordinates of the point add with a 1 )
         points_out = data.copy()
         points_out[:3] = np.einsum("ij,jkf->ikf", rotm, data[:3])
 
         # Output the marker file
         for i, t in enumerate(time):
             fi.write(f"{i}\t{t:.16f}\t")
-            frame = points_out[:, :, i]
+            frame = points_out[:3, :, i]
             fi.write(
                 "\t".join(
                     # Remap NaNs to OpenSim compatible nan string
