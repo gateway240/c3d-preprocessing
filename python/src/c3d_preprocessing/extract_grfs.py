@@ -88,7 +88,7 @@ def extract_grfs(  # ruff: ignore[too-many-arguments, too-many-locals, too-many-
         index = int(grf_mapping[i, 2])
         if index >= 0:
             # Only filter if filter parameters are valid
-            if fc >= 0 and n > 0 and a and b:
+            if fc >= 0 and n > 0:
                 grf_filtered[:, grf_index, :] = filtfilt(b, a, analogs[:, index, :])
             else:
                 grf_filtered[:, grf_index, :] = analogs[:, index, :]

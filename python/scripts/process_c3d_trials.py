@@ -52,8 +52,8 @@ FILTER_ORDER = 2  # forward backward filtering doubles it (so 2 = 4th order)
 
 MOCAP_SUBDIR = "mocap"
 # 01...13
-# PARTICIPANTS = [str(i).zfill(2) for i in range(1, 14)]
-PARTICIPANTS = ["01"]
+PARTICIPANTS = [str(i).zfill(2) for i in range(1, 14)]
+# PARTICIPANTS = ["01"]
 BASE_TRIALS = [
     ("static_cal", 1, 1),
     ("dyn_sara", 1, 1),
