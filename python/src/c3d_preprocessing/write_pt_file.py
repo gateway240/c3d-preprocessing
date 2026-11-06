@@ -59,11 +59,11 @@ def write_pt_file(
             )
 
             data_slice_quat[:, :, sensor, :] = mats.transpose(1, 2, 0)
-
+        data_slice = data_slice_quat
         # print(data_slice_quat.shape)
 
     # tensor = torch.empty(size=(num_frames, num_sensors, unit_size))
-    tensor = torch.from_numpy(data_slice.T)
+    tensor = torch.from_numpy(data_slice.T).to(torch.float32)
     output += f"Sensors: {SENSOR_MAPPING} \n"
     output += f"Selected indices: {valid_sensors}\n"
     output += f"Writing tensor with shape {tensor.shape}\n"
