@@ -1,3 +1,6 @@
+import c3d_preprocessing.global_rotations
+from c3d_preprocessing.global_rotations import global_rotations
+from c3d_preprocessing.armature import SMPLHJoint
 from pathlib import Path
 
 import numpy as np
@@ -7,14 +10,112 @@ from scipy.spatial.transform import Rotation
 
 # From the transposer manuscript
 SENSOR_MAPPING = [
-    "radius_l_imu",  # 1. left forearm
-    "radius_r_imu",  # 2. right forearm
+    "pelvis_imu",  # 6. pelvis (root)
     "tibia_l_imu",  # 3. left lower leg
     "tibia_r_imu",  # 4. right lower leg
     "head_imu",  # 5. head imu
-    "pelvis_imu",  # 6. pelvis (root)
+    "radius_l_imu",  # 1. left forearm
+    "radius_r_imu",  # 2. right forearm
+]
+tracked_joints = [
+    SMPLHJoint.PELVIS,
+    SMPLHJoint.LKNEE,
+    SMPLHJoint.RKNEE,
+    SMPLHJoint.HEAD,
+    SMPLHJoint.LELBOW,
+    SMPLHJoint.RELBOW,
 ]
 
+def make_calibration_pose(num_frames: int=1) -> torch.Tensor:
+    pose = torch.eye(3).repeat(num_frames, 24, 1, 1)
+
+    left_arm_down = torch.tensor(
+        Rotation.from_euler("z", -85, degrees=True).as_matrix(),
+        dtype=torch.float32,
+    )
+
+    right_arm_down = torch.tensor(
+        Rotation.from_euler("z", 85, degrees=True).as_matrix(),
+        dtype=torch.float32,
+    )
+
+    left_elbow_bend = torch.tensor(
+        Rotation.from_euler("y", -10, degrees=True).as_matrix(),
+        dtype=torch.float32,
+    )
+
+    right_elbow_bend = torch.tensor(
+        Rotation.from_euler("y", 10, degrees=True).as_matrix(),
+        dtype=torch.float32,
+    )
+
+    pose[:, SMPLHJoint.LSHOULDER] = left_arm_down
+    pose[:, SMPLHJoint.RSHOULDER] = right_arm_down
+
+    pose[:, SMPLHJoint.LELBOW] = left_elbow_bend
+    pose[:, SMPLHJoint.RELBOW] = right_elbow_bend
+
+    return pose
+
+def calibrate_rotations(
+    imu_rotations,   # [frames,6,3,3]
+    pose,            # calibration pose
+):
+    parent = [
+        -1, 0, 0, 0,
+         1, 2, 3,
+         4, 5, 6,
+         7, 8, 9,
+        12, 12, 12,
+        13, 14,
+        16, 17,
+        18, 19,
+        20, 21,
+    ]
+
+    tracked_joints = [
+        SMPLHJoint.PELVIS,
+        SMPLHJoint.LKNEE,
+        SMPLHJoint.RKNEE,
+        SMPLHJoint.HEAD,
+        SMPLHJoint.LELBOW,
+        SMPLHJoint.RELBOW,
+    ]
+
+    # calibration pose bone orientations
+    g_rot = torch.tensor(global_rotations, dtype=torch.float32)
+
+    R_bone_M_calib = g_rot[0, tracked_joints]
+
+    # average calibration orientation
+    R_sensor_I_calib = imu_rotations[0:60].mean(0)
+
+    # Eq. 15
+    P_IM = torch.eye(
+        3,
+        dtype=torch.float32,
+    )
+
+    # Eq. 18
+    R_offset_I = (
+        R_sensor_I_calib.transpose(-1, -2)
+        @ P_IM.unsqueeze(0)
+        @ R_bone_M_calib
+    )
+
+    # runtime reconstruction
+    # Eq. 16 + Eq. 17
+    R_bone_M = (
+        P_IM.T
+        .unsqueeze(0)
+        .unsqueeze(0)
+        @ (
+            imu_rotations
+            @ R_offset_I.unsqueeze(0)
+        )
+    )
+
+    return R_bone_M
 
 def write_pt_file(
     data: NDArray,
@@ -42,8 +143,17 @@ def write_pt_file(
     _, num_sensors, _ = data_slice.shape
     # data_slice = data[:, valid_sensors.keys(), :]
     # print(data_slice.shape)
+    # CALIBRATION
+    # g_rot = torch.tensor(global_rotations, dtype=torch.float32)
+    # print(g_rot.shape)
+    # R_bone_M = torch.stack(
+    #     [g_rot[0, j] for j in tracked_joints]
+    # )
+    pose = make_calibration_pose()
 
-    # if unit_size == 3:
+    if unit_size == 3:
+        tensor = torch.from_numpy(data_slice.T).to(torch.float32)
+        # calibrate_accelerations()
     # print("No change for Accelerations!")
     if unit_size == 4:  # ruff: ignore[magic-value-comparison]
         # print("Converting orientations!")
@@ -60,14 +170,23 @@ def write_pt_file(
 
             data_slice_quat[:, :, sensor, :] = mats.transpose(1, 2, 0)
         data_slice = data_slice_quat
+        d = torch.from_numpy(data_slice.T).to(torch.float32)
         # print(data_slice_quat.shape)
+        R_bone_M = calibrate_rotations(
+            d,   # calibration segment
+            pose,
+        )
+        print(R_bone_M.shape)
+ 
+        # overwrite with calibrated data
+        tensor = R_bone_M
+        # print(tensor.shape)
 
-    # tensor = torch.empty(size=(num_frames, num_sensors, unit_size))
-    tensor = torch.from_numpy(data_slice.T).to(torch.float32)
+
     output += f"Sensors: {SENSOR_MAPPING} \n"
     output += f"Selected indices: {valid_sensors}\n"
     output += f"Writing tensor with shape {tensor.shape}\n"
-    # print(tensor.shape)
+    # print(tensoRotation.shape)
     # Write output file
     torch.save(tensor, output_path)
     # with output_path.open(encoding="utf-8", mode="w") as fi:
