@@ -8,7 +8,7 @@ import numpy as np
 
 from c3d_preprocessing.read_sto_file import read_sto_file
 from c3d_preprocessing.trial import Trial
-from c3d_preprocessing.write_mot_file import write_mot_file
+from c3d_preprocessing.write_pt_file import write_pt_file
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,21 +35,21 @@ FILTER_ORDER = 2  # forward backward filtering doubles it (so 2 = 4th order)
 # PARTICIPANTS = [str(i).zfill(2) for i in range(1, 14)]
 PARTICIPANTS = ["01"]
 BASE_TRIALS = [
-    # "static_cal",
-    # "dyn_sara",
-    # "dyn_score_hip",
-    # "dyn_score_ankle",
-    # "crouch_lift",
-    # "crouch_rotate",
-    # "curls",
-    # "kettlebell",
-    # "squats_deep",
-    # "half_jacks",
-    # "squat_jumps",
-    # "box_jabs",
-    # "box_combos",
-    # "walking",
-    # "jogging",
+    "static_cal",
+    "dyn_sara",
+    "dyn_score_hip",
+    "dyn_score_ankle",
+    "crouch_lift",
+    "crouch_rotate",
+    "curls",
+    "kettlebell",
+    "squats_deep",
+    "half_jacks",
+    "squat_jumps",
+    "box_jabs",
+    "box_combos",
+    "walking",
+    "jogging",
     "crab_walking",
 ]
 # TRIAL_SUFFIX = "marker_ik_output.mot"
@@ -68,7 +68,7 @@ def process_trial(trial: Trial) -> int:  # ruff: ignore[too-many-locals]
     output_path = OUTPUT_DIR / trial.participant
     output_path.mkdir(parents=True, exist_ok=True)
 
-    filtered_suffix = "_pt.pt"
+    filtered_suffix = ".pt"
 
     dir_data = list(input_path.glob(f"*{EXT}"))
     # print(dir_data)
@@ -84,7 +84,7 @@ def process_trial(trial: Trial) -> int:  # ruff: ignore[too-many-locals]
     output = ""
     for data_file in matching_files:
         logger.info("Starting to read file: %s", data_file)
-        (time, data, labels, header) = read_sto_file(
+        (time, data, labels, _header) = read_sto_file(
             data_file,
         )
         # Trial filtering
@@ -114,10 +114,9 @@ def process_trial(trial: Trial) -> int:  # ruff: ignore[too-many-locals]
         # data[:, 1:, :] = filtfilt(b, a, data[:, 1:, :])
 
         # [status, output] = writeMotFile(data, labels, header, output_file);
-        (status, output) = write_mot_file(
+        (status, output) = write_pt_file(
             data,
             labels,
-            header,
             output_file,
         )
 
