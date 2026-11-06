@@ -13,8 +13,20 @@ dependencies = [
   "prek>=0.5.7",
   "ruff>=0.17.3",
   "scipy>=1.15.3",
+  "torch>=2.14.1",
   "ty>=0.0.94",
 ]
+
+# CPU only since all we are doing is writing .pt files
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+torchvision = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
 
 [project.scripts]
 c3d_preprocessing = "c3d_preprocessing:main"
