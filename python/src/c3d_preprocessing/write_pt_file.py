@@ -7,12 +7,12 @@ from scipy.spatial.transform import Rotation
 
 # From the transposer manuscript
 SENSOR_MAPPING = [
-    "radius_l_imu",  # 1. left forearm
-    "radius_r_imu",  # 2. right forearm
+    "pelvis_imu",  # 6. pelvis (root)
     "tibia_l_imu",  # 3. left lower leg
     "tibia_r_imu",  # 4. right lower leg
     "head_imu",  # 5. head imu
-    "pelvis_imu",  # 6. pelvis (root)
+    "radius_l_imu",  # 1. left forearm
+    "radius_r_imu",  # 2. right forearm
 ]
 
 
