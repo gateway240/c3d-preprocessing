@@ -3,7 +3,6 @@ from pathlib import Path
 import numpy as np
 import torch
 from numpy.typing import NDArray
-from scipy.spatial.transform import Rotation
 
 # From the transposer manuscript
 SENSOR_MAPPING = [
@@ -33,34 +32,36 @@ def write_pt_file(
     output += f"Unit size = {unit_size}\n"
     output += f"Columns: {columns!s}\n"
 
+    column_index = {name: i for i, name in enumerate(columns)}
+
     valid_sensors = np.asarray([
-        i for i, val in enumerate(columns) if val in SENSOR_MAPPING
+        column_index[name] for name in SENSOR_MAPPING if name in column_index
     ])
     # print(valid_sensors)
     # print(len(valid_sensors))
     data_slice = np.take(data, valid_sensors, axis=1)
-    _, num_sensors, _ = data_slice.shape
+    # _, num_sensors, _ = data_slice.shape
     # data_slice = data[:, valid_sensors.keys(), :]
     # print(data_slice.shape)
 
     # if unit_size == 3:
     # print("No change for Accelerations!")
-    if unit_size == 4:  # ruff: ignore[magic-value-comparison]
-        # print("Converting orientations!")
-        data_slice_quat = np.empty([3, 3, num_sensors, num_frames])
-        for sensor in range(num_sensors):
-            qs = data_slice[:, sensor, :].T  # (num_frames, 4)
-            # Osim uses w,x,y,z format
-            mats = (
-                Rotation.from_quat(
-                    qs,
-                    scalar_first=True,
-                ).as_matrix()  # (num_frames, 3, 3)
-            )
+    # if unit_size == 4
+    #     # print("Converting orientations!")
+    #     data_slice_quat = np.empty([3, 3, num_sensors, num_frames])
+    #     for sensor in range(num_sensors):
+    #         qs = data_slice[:, sensor, :].T  # (num_frames, 4)
+    #         # Osim uses w,x,y,z format
+    #         mats = (
+    #             Rotation.from_quat(
+    #                 qs,
+    #                 scalar_first=True,
+    #             ).as_matrix()  # (num_frames, 3, 3)
+    #         )
 
-            data_slice_quat[:, :, sensor, :] = mats.transpose(1, 2, 0)
-        data_slice = data_slice_quat
-        # print(data_slice_quat.shape)
+    #         data_slice_quat[:, :, sensor, :] = mats.transpose(1, 2, 0)
+    #     data_slice = data_slice_quat
+    # print(data_slice_quat.shape)
 
     # tensor = torch.empty(size=(num_frames, num_sensors, unit_size))
     tensor = torch.from_numpy(data_slice.T).to(torch.float32)
