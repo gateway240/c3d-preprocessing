@@ -44,7 +44,7 @@ MARKER_ROTATIONS = [-pi/2, pi/2, 0];
 % [-1,0,0]
 rotm = eulang2rotmat(MARKER_ROTATIONS,'XZY');
 
-GRF_CUTOFF = 1; %N
+GRF_THRESHOLD = 1; %N
 
 % Low-pass parameters
 CUTOFF_FREQUENCY = 6; %Hz
@@ -87,19 +87,19 @@ for i = 1:size(TRIALS,1)
     grf_file = fullfile(OUTPUT_PATH, strcat(trial_name,GRFS_RAW_SUFFIX));
     fprintf("Starting on file: %s\n", grf_file);
     [status, output] = extractGrfs(c3d, all_pf, grf_file, rotm, ...
-        fp_l, fp_r, -1, -1, GRF_CUTOFF, time_start, time_end);
+        fp_l, fp_r, -1, -1, GRF_THRESHOLD, time_start, time_end);
     fprintf("Status: %d\n%s", status, output);
     %% GRF Extraction - TRIAL_grfs.sto file
     grf_file = fullfile(OUTPUT_PATH, strcat(trial_name,GRFS_SUFFIX));
     fprintf("Starting on file: %s\n", grf_file);
     [status, output] = extractGrfs(c3d, all_pf, grf_file, rotm, ...
-        fp_l, fp_r, FILTER_ORDER, CUTOFF_FREQUENCY, GRF_CUTOFF, time_start, time_end);
+        fp_l, fp_r, FILTER_ORDER, CUTOFF_FREQUENCY, GRF_THRESHOLD, time_start, time_end);
     fprintf("Status: %d\n%s", status, output);
     %% GRF Extraction [WRONG!] - TRIAL_grfs_wrong.sto file
     grf_file = fullfile(OUTPUT_PATH, strcat(trial_name,GRFS_WRONG_SUFFIX));
     fprintf("Starting on file: %s\n", grf_file);
     [status, output] = extractGrfsWrong(c3d, all_pf, grf_file, rotm, ...
-        fp_l, fp_r, FILTER_ORDER, CUTOFF_FREQUENCY, GRF_CUTOFF, time_start, time_end);
+        fp_l, fp_r, FILTER_ORDER, CUTOFF_FREQUENCY, GRF_THRESHOLD, time_start, time_end);
     fprintf("Status: %d\n%s", status, output);
 end
 fprintf("Finished all trials!\n");

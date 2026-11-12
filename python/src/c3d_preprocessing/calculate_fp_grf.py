@@ -10,7 +10,7 @@ def calculate_fp_grf(  # ruff: ignore[too-many-locals]
     data: NDArray[np.float64],
     fp: Any,  # ruff: ignore[any-type]
     rotm: NDArray,
-    grf_cutoff: float,
+    grf_threshold: float,
 ) -> NDArray[np.float64]:
     _, _num_cols, length_frames = data.shape
     corners = fp["corners"]
@@ -34,7 +34,7 @@ def calculate_fp_grf(  # ruff: ignore[too-many-locals]
         m = moment[:, i]
         m_raw = m.copy() + np.cross(f, origin)
         fz = f[2]
-        valid = -fz >= grf_cutoff
+        valid = -fz >= grf_threshold
 
         cop_raw = np.asarray([-m_raw[1] / fz, m_raw[0] / fz, 0])
 

@@ -20,13 +20,14 @@ you may need to fix the mex GLIBC path. Instructions are provided in [this issue
 5. Set the parameters in `matlab/process_c3d_trial.m` and run it!
 
 # Python
-WIP
-## Environment Setup
+The Python scripts includes the same functionality as the MATLAB scripts, with improved
+parallel processing for efficient bulk trial processing.
 
+## Environment Setup
 
 1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
 2. `cd python` and then `uv venv`
 3. `source .venv/bin/activate`
 4. `uv pip install -e .`
-
+5. `python scripts/process_c3d_trials.py`
 > NOTE: you can also use `python -m venv .venv` or any other python venv method.

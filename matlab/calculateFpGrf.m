@@ -1,11 +1,11 @@
-function [output] = calculateFpGrf(data,fp, rotm, grf_cutoff)
+function [output] = calculateFpGrf(data,fp, rotm, grf_threshold)
 %calculateFpGrf Summary of this function goes here
 %   Detailed explanation goes here
 arguments (Input)
     data
     fp
     rotm
-    grf_cutoff
+    grf_threshold
 end
 
 arguments (Output)
@@ -30,7 +30,7 @@ for i = 1:length_frames
     m_raw = m + cross(f,origin);
 
     fz = f(3);
-    valid = -fz >= grf_cutoff;
+    valid = -fz >= grf_threshold;
 
     cop_raw = [-m_raw(2) / fz, m_raw(1) / fz, 0];
 

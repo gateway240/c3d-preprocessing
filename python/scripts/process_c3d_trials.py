@@ -44,7 +44,7 @@ rotm = np.array([
     [0, 0, 1],
     [-1, 0, 0],
 ])
-GRF_CUTOFF = 1  # N
+GRF_THRESHOLD = 1  # N
 
 # Low-pass parameters
 CUTOFF_FREQUENCY = 6  # Hz
@@ -163,7 +163,7 @@ def process_trial(trial: Trial) -> int:
         fp_r,
         -1,
         -1,
-        GRF_CUTOFF,
+        GRF_THRESHOLD,
         time_start,
         time_end,
     )
@@ -181,7 +181,7 @@ def process_trial(trial: Trial) -> int:
         fp_r,
         FILTER_ORDER,
         CUTOFF_FREQUENCY,
-        GRF_CUTOFF,
+        GRF_THRESHOLD,
         time_start,
         time_end,
     )
